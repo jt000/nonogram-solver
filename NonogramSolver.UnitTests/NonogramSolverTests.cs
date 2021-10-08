@@ -136,5 +136,156 @@ namespace NonogramSolver
                 Assert.Equal(new[] {false, true, false, true, true}, results[2]);
             }
         }
+
+        public class IsValidOption
+        {
+            [Fact]
+            public void BoardIsNull()
+            {
+                var board = new bool?[] {null};
+                var option = new bool[] {true};
+
+                var result = Program.IsValidOption(board, option);
+                Assert.True(result);
+            }
+
+            [Fact]
+            public void BoardIsSame()
+            {
+                var board = new bool?[] { true };
+                var option = new bool[] { true };
+
+                var result = Program.IsValidOption(board, option);
+                Assert.True(result);
+            }
+
+            [Fact]
+            public void BoardIsDifferent()
+            {
+                var board = new bool?[] { true };
+                var option = new bool[] { false };
+
+                var result = Program.IsValidOption(board, option);
+                Assert.False(result);
+            }
+
+            [Fact]
+            public void SanityCheck()
+            {
+                var board = new bool?[] { true, false, null, null };
+                var option = new bool[] { true, false, true, false };
+
+                var result = Program.IsValidOption(board, option);
+                Assert.True(result);
+            }
+        }
+
+        public class SolveBoard
+        {
+            [Fact]
+            public void SingleEntryBoard()
+            {
+                int[][] columns = {
+                    new [] { 1 }
+                };
+
+                int[][] rows = {
+                    new [] { 1 }
+                };
+
+                var board = Program.SolveBoard(columns, rows);
+
+                var expected = new bool[,]
+                {
+                    { true }
+                };
+
+                Assert.Equal(expected, board);
+            }
+
+            [Fact]
+            public void DblBoard()
+            {
+                int[][] columns = {
+                    new [] { 1 },
+                    new [] { 0 },
+                };
+
+                int[][] rows = {
+                    new [] { 1 },
+                    new [] { 0 }
+                };
+
+                var board = Program.SolveBoard(columns, rows);
+
+                var expected = new bool[,]
+                {
+                    { true, false },
+                    { false, false },
+                };
+
+                Assert.Equal(expected, board);
+            }
+
+            [Fact]
+            public void TwoSegmentsBoard()
+            {
+                int[][] columns = {
+                    new [] { 1, 1 },
+                    new [] { 1 },
+                    new [] { 1, 1 }
+                };
+
+                int[][] rows = {
+                    new [] { 1, 1 },
+                    new [] { 1 },
+                    new [] { 1, 1 }
+                };
+
+                var board = Program.SolveBoard(columns, rows);
+
+                var expected = new bool[,]
+                {
+                    { true, false, true },
+                    { false, true, false },
+                    { true, false, true },
+                };
+
+                Assert.Equal(expected, board);
+            }
+
+            [Fact]
+            public void SanityCheck5x5()
+            {
+                int[][] columns = {
+                    new [] { 2, 1 },
+                    new [] { 5 },
+                    new [] { 5 },
+                    new [] { 5 },
+                    new [] { 2 }
+                };
+
+                int[][] rows = {
+                    new [] { 3 },
+                    new [] { 4 },
+                    new [] { 4 },
+                    new [] { 4 },
+                    new [] { 5 },
+                };
+
+                var board = Program.SolveBoard(columns, rows);
+
+                var expected = new bool[,]
+                {
+                    { false, true, true, false, true },
+                    { true, true, true, true, true },
+                    { true, true, true, true, true },
+                    { true, true, true, true, true },
+                    { false, false, false, true, true },
+                };
+
+                Assert.Equal(expected, board);
+            }
+        }
     }
 }

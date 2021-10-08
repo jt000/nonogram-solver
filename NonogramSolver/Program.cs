@@ -25,25 +25,98 @@ namespace NonogramSolver
                 rows[i] = Prompt.Input<string>($"Enter Row {i + 1} (space delim)").Split().Select(s => int.Parse(s.Trim())).ToArray();
             }
 
-            var board = new bool?[width, height];
-            SolveBoard(board, columns, rows);
+            var board = SolveBoard(columns, rows);
 
             PrintBoard(board);
         }
 
-        private static void SolveBoard(bool?[,] board, int[][] columns, int[][] rows)
+        public static bool[,] SolveBoard(int[][] columns, int[][] rows)
         {
             // while not all parts solved
             //   get all options for column\row
             //     try options on board
             //       for each possible option (based on current state) set any squares always or not set
+            bool?[,] board = new bool?[columns.Length, rows.Length];
 
-            for (var x = 0; x < columns.Length; x++)
+            while (board.Cast<bool?>().Any(i => i == null))
             {
-                var boardCol = GetBoardColumn(x, board);
-                var options = GetOptions(columns[x], board.GetLength(1));
+                for (var x = 0; x < columns.Length; x++)
+                {
+                    var boardCol = GetBoardColumn(x, board);
+                    var options = GetOptions(columns[x], board.GetLength(1))
+                        .Where(o => IsValidOption(boardCol, o))
+                        .ToArray();
+
+                    for (int i = 0; i < boardCol.Length; i++)
+                    {
+                        if (boardCol[i] == null)
+                        {
+                            if (options.All(o => o[i] == true))
+                            {
+                                boardCol[i] = true;
+                            }
+                            else if (options.All(o => o[i] == false))
+                            {
+                                boardCol[i] = false;
+                            }
+                        }
+                    }
+
+                    SetBoardColumn(x, board, boardCol);
+                }
+
+                for (var y = 0; y < rows.Length; y++)
+                {
+                    var boardRow = GetBoardRow(y, board);
+                    var options = GetOptions(rows[y], board.GetLength(0))
+                        .Where(o => IsValidOption(boardRow, o))
+                        .ToArray();
+
+                    for (int i = 0; i < boardRow.Length; i++)
+                    {
+                        if (boardRow[i] == null)
+                        {
+                            if (options.All(o => o[i] == true))
+                            {
+                                boardRow[i] = true;
+                            }
+                            else if (options.All(o => o[i] == false))
+                            {
+                                boardRow[i] = false;
+                            }
+                        }
+                    }
+
+                    SetBoardRow(y, board, boardRow);
+                }
             }
 
+            var newBoard = new bool[columns.Length, rows.Length];
+            for (int x = 0; x < board.GetLength(0); x++)
+            {
+                for (int y = 0; y < board.GetLength(1); y++)
+                {
+                    newBoard[x, y] = board[x, y].Value;
+                }
+            }
+
+            return newBoard;
+        }
+
+        public static bool IsValidOption(bool?[] board, bool[] option)
+        {
+            if (board.Length != option.Length)
+                throw new InvalidOperationException();
+
+            for (int i = 0; i < board.Length; i++)
+            {
+                if (board[i] != null && board[i].Value != option[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public static IEnumerable<bool[]> GetOptions(int[] segment, int length)
@@ -108,7 +181,40 @@ namespace NonogramSolver
             return result;
         }
 
-        private static void PrintBoard(bool?[,] board)
+        private static void SetBoardColumn(int columnId, bool?[,] board, bool?[] column)
+        {
+            if (board.GetLength(1) != column.Length)
+                throw new InvalidOperationException();
+
+            for (int y = 0; y < board.GetLength(1); y++)
+            {
+                board[columnId, y] = column[y];
+            }
+        }
+
+        private static bool?[] GetBoardRow(int rowId, bool?[,] board)
+        {
+            var result = new bool?[board.GetLength(0)];
+            for (int x = 0; x < board.GetLength(0); x++)
+            {
+                result[x] = board[x, rowId];
+            }
+
+            return result;
+        }
+
+        private static void SetBoardRow(int rowId, bool?[,] board, bool?[] row)
+        {
+            if (board.GetLength(0) != row.Length)
+                throw new InvalidOperationException();
+
+            for (int x = 0; x < board.GetLength(0); x++)
+            {
+                board[x, rowId] = row[x];
+            }
+        }
+
+        private static void PrintBoard(bool[,] board)
         {
             var noFill = "░░";
             var fill = "██";
@@ -117,7 +223,7 @@ namespace NonogramSolver
             {
                 for (int y = 0; y < board.GetLength(1); y++)
                 {
-                    Console.Write(board[x, y] == null ? "  " : board[x,y].Value ? fill : noFill);
+                    Console.Write(board[x,y] ? fill : noFill);
                 }
 
                 Console.WriteLine();
