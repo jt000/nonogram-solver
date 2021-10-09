@@ -9,23 +9,22 @@ namespace NonogramSolver
     {
         static void Main(string[] args)
         {
-            var width = Prompt.Input<int>("Board Width");
-            var height = Prompt.Input<int>("Board Height");
+            var size = Prompt.Input<int>("Board Size");
 
-            var columns = new int[width][];
-            var rows = new int[height][];
+            var columns = new int[size][];
+            var rows = new int[size][];
 
-            for (var i = 0; i < width; i++)
+            for (var i = 0; i < size; i++)
             {
                 columns[i] = Prompt.Input<string>($"Enter Column {i + 1} (space delim)").Split().Select(s => int.Parse(s.Trim())).ToArray();
             }
 
-            for (var i = 0; i < height; i++)
+            for (var i = 0; i < size; i++)
             {
                 rows[i] = Prompt.Input<string>($"Enter Row {i + 1} (space delim)").Split().Select(s => int.Parse(s.Trim())).ToArray();
             }
 
-            var board = SolveBoard(columns, rows);
+            var board = SolveBoard(rows, columns);
 
             PrintBoard(board);
         }
@@ -89,6 +88,8 @@ namespace NonogramSolver
 
                     SetBoardRow(y, board, boardRow);
                 }
+
+                Console.Write(".");
             }
 
             var newBoard = new bool[columns.Length, rows.Length];
@@ -100,6 +101,7 @@ namespace NonogramSolver
                 }
             }
 
+            Console.WriteLine();
             return newBoard;
         }
 
